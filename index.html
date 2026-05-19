@@ -55,10 +55,16 @@
     content: "—— ";
   }
 
-  .copy-btn {
+  .btn-group {
     position: fixed;
     bottom: 2rem;
     right: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .icon-btn {
     width: 44px;
     height: 44px;
     border-radius: 50%;
@@ -70,38 +76,65 @@
     align-items: center;
     justify-content: center;
     opacity: 0.25;
-    transition: opacity 0.25s, color 0.25s, border-color 0.25s;
+    transition: opacity 0.25s, color 0.25s, border-color 0.25s, transform 0.15s;
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
   }
 
-  .copy-btn:hover,
-  .copy-btn:focus-visible {
+  .icon-btn:hover,
+  .icon-btn:focus-visible {
     opacity: 1;
     color: #6b6358;
     border-color: #b0a89b;
     outline: none;
   }
 
-  .copy-btn:active {
+  .icon-btn:active {
     transform: scale(0.95);
   }
 
-  .copy-btn svg {
+  .icon-btn svg {
     width: 18px;
     height: 18px;
     pointer-events: none;
   }
 
-  .copy-btn.copied {
+  .icon-btn.copied {
     opacity: 1;
     color: #5a8a6e;
     border-color: #5a8a6e;
   }
 
+  .quote.fade-out {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+
+  .quote.fade-in {
+    opacity: 1;
+    transition: opacity 0.25s ease;
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(180deg); }
+  }
+
+  .icon-btn.spinning svg {
+    animation: spin 0.35s ease;
+  }
+
+  .version {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-size: 0.7rem;
+    color: #d0c8b8;
+    margin-top: 3rem;
+  }
+
   @media (max-width: 480px) {
     body { padding: 1.5rem; }
-    .copy-btn { bottom: 1.25rem; right: 1.25rem; opacity: 0.35; }
+    .btn-group { bottom: 1.25rem; right: 1.25rem; }
+    .icon-btn { opacity: 0.35; }
     .quote { font-size: clamp(1.15rem, 5vw, 1.5rem); }
   }
 </style>
@@ -112,14 +145,23 @@
   <div class="date" id="date"></div>
   <blockquote class="quote" id="quote"></blockquote>
   <cite class="source" id="source"></cite>
+  <div class="version">每日一句 v1.0</div>
 </main>
 
-<button class="copy-btn" id="copyBtn" aria-label="复制名言" title="复制">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-  </svg>
-</button>
+<div class="btn-group">
+  <button class="icon-btn" id="refreshBtn" aria-label="换一句" title="换一句">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="23 4 23 10 17 10"/>
+      <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+    </svg>
+  </button>
+  <button class="icon-btn" id="copyBtn" aria-label="复制名言" title="复制">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+    </svg>
+  </button>
+</div>
 
 <noscript>
   <style>
@@ -163,6 +205,22 @@
     { t: "本来无一物，何处惹尘埃。", s: "惠能" },
     { t: "花非花，雾非雾。夜半来，天明去。来如春梦不多时，去似朝云无觅处。", s: "白居易" },
     { t: "博学之，审问之，慎思之，明辨之，笃行之。", s: "《中庸》" },
+    { t: "天将降大任于是人也，必先苦其心志，劳其筋骨，饿其体肤。", s: "《孟子》" },
+    { t: "穷则独善其身，达则兼济天下。", s: "《孟子》" },
+    { t: "不积跬步，无以至千里；不积小流，无以成江海。", s: "《荀子》" },
+    { t: "知己知彼，百战不殆。", s: "《孙子兵法》" },
+    { t: "不战而屈人之兵，善之善者也。", s: "《孙子兵法》" },
+    { t: "业精于勤，荒于嬉；行成于思，毁于随。", s: "韩愈" },
+    { t: "路漫漫其修远兮，吾将上下而求索。", s: "屈原" },
+    { t: "会当凌绝顶，一览众山小。", s: "杜甫" },
+    { t: "天生我材必有用，千金散尽还复来。", s: "李白" },
+    { t: "行到水穷处，坐看云起时。", s: "王维" },
+    { t: "悟已往之不谏，知来者之可追。", s: "陶渊明" },
+    { t: "非淡泊无以明志，非宁静无以致远。", s: "诸葛亮" },
+    { t: "处世让一步为高，退步即进步的张本。", s: "《菜根谭》" },
+    { t: "岁月本长，而忙者自促；天地本宽，而鄙者自隘。", s: "《菜根谭》" },
+    { t: "藏书不难，能看为难。", s: "《幽梦影》" },
+    { t: "世事洞明皆学问，人情练达即文章。", s: "《红楼梦》" },
 
     { t: "认识你自己。", s: "古希腊德尔斐神庙铭文" },
     { t: "未经审视的人生不值得过。", s: "苏格拉底" },
@@ -184,6 +242,19 @@
     { t: "人是悬挂在自己编织的意义之网上的动物。", s: "马克斯·韦伯" },
     { t: "行动不一定带来幸福，但没有行动就没有幸福。", s: "本杰明·迪斯雷利" },
     { t: "意识到自己的局限性，正是超越局限的开始。", s: "斯宾诺莎" },
+    { t: "大多数人过着平静而绝望的生活。", s: "梭罗《瓦尔登湖》" },
+    { t: "自信是成功的第一秘诀。", s: "爱默生" },
+    { t: "这个世界的问题在于聪明人充满疑惑，而蠢人却自信满满。", s: "罗素" },
+    { t: "凡是可以说的东西，都可以说清楚；对于不能说的东西，必须保持沉默。", s: "维特根斯坦" },
+    { t: "人的全部尊严就在于思想。", s: "帕斯卡" },
+    { t: "最伟大的事，就是做自己的主人。", s: "蒙田" },
+    { t: "你若要喜爱你自己的价值，你就得给世界创造价值。", s: "歌德" },
+    { t: "每个人的生命都是通向自我的征途。", s: "赫尔曼·黑塞" },
+    { t: "美将拯救世界。", s: "陀思妥耶夫斯基" },
+    { t: "世界上最宽阔的是海洋，比海洋更宽阔的是天空，比天空更宽阔的是人的心灵。", s: "雨果" },
+    { t: "一个人在放弃自我之前，什么都不是。", s: "加缪" },
+    { t: "不要成为别人，要成为你自己。", s: "克尔凯郭尔" },
+    { t: "人是万物的尺度。", s: "普罗泰戈拉" },
 
     { t: "向外看的人在做梦，向内看的人已醒来。", s: "荣格" },
     { t: "认识自己的阴暗面，是应对他人阴暗面最好的方法。", s: "荣格" },
@@ -218,7 +289,24 @@
     { t: "静下心来，一切都会水到渠成。", s: "老子（西方解读）" },
     { t: "当我们停止思考自己时，我们才开始真正活着。", s: "列夫·托尔斯泰" },
     { t: "过去只是一个我们不断重述的故事。", s: "希拉里·曼特尔" },
-    { t: "所谓自由，就是不再执着于被爱。", s: "岸见一郎 / 古贺史健《被讨厌的勇气》" }
+    { t: "所谓自由，就是不再执着于被爱。", s: "岸见一郎 / 古贺史健《被讨厌的勇气》" },
+    { t: "只有真实的自我才有创造力，虚假的自我只能模仿。", s: "唐纳德·温尼科特" },
+    { t: "你必须直面死亡，才能真正地活着。", s: "欧文·亚隆" },
+    { t: "心流不是完美，而是全身心投入。", s: "米哈里·契克森米哈伊" },
+    { t: "我们对自己认为我们知道的东西过分自信。", s: "丹尼尔·卡尼曼" },
+    { t: "人生就像骑自行车，要保持平衡就必须不断前进。", s: "爱因斯坦" },
+    { t: "想象力比知识更重要。", s: "爱因斯坦" },
+    { t: "不是所有有价值的东西都能被计算，也不是所有能被计算的东西都有价值。", s: "爱因斯坦" },
+    { t: "真正的快乐来自做有意义的事，而不是轻松的事。", s: "纳西姆·塔勒布" },
+    { t: "风会熄灭蜡烛，却会让火越烧越旺。", s: "纳西姆·塔勒布《反脆弱》" },
+    { t: "在拿锤子的人眼里，所有问题都是钉子。", s: "查理·芒格" },
+    { t: "每天比前一天聪明一点点。", s: "查理·芒格" },
+    { t: "如果你不希望拥有某样东西，那么你就无法真正拥有它。", s: "纳瓦尔·拉维坎特" },
+    { t: "你的工作将占据人生的很大一部分，只有相信自己所做的是伟大的工作，你才能怡然自得。", s: "史蒂夫·乔布斯" },
+    { t: "保持饥饿，保持愚蠢。", s: "史蒂夫·乔布斯" },
+    { t: "永远不要把手段误认为目的。", s: "赫尔曼·黑塞" },
+    { t: "当你改变看待事物的方式时，你所看待的事物也随之改变。", s: "韦恩·戴尔" },
+    { t: "活在当下，因为生命只存在于此刻。", s: "一行禅师" }
   ];
 
   function hashDJB2(str) {
@@ -246,24 +334,47 @@
       + '　星期' + weekdays[d.getDay()];
   }
 
+  var quoteEl = document.getElementById('quote');
+  var sourceEl = document.getElementById('source');
+  var currentIdx = -1;
+
+  function setQuote(idx) {
+    var q = QUOTES[idx];
+    quoteEl.classList.add('fade-out');
+    quoteEl.addEventListener('transitionend', function handler() {
+      quoteEl.removeEventListener('transitionend', handler);
+      quoteEl.textContent = q.t;
+      sourceEl.textContent = q.s;
+      quoteEl.classList.remove('fade-out');
+      void quoteEl.offsetWidth;
+      quoteEl.classList.add('fade-in');
+      setTimeout(function () { quoteEl.classList.remove('fade-in'); }, 250);
+    });
+    currentIdx = idx;
+  }
+
   var key = getTodayKey();
-  var idx = hashDJB2(key) % QUOTES.length;
-  var quote = QUOTES[idx];
+  var dailyIdx = hashDJB2(key) % QUOTES.length;
 
   document.getElementById('date').textContent = getDateDisplay();
-  document.getElementById('quote').textContent = quote.t;
-  document.getElementById('source').textContent = quote.s;
+  quoteEl.textContent = QUOTES[dailyIdx].t;
+  sourceEl.textContent = QUOTES[dailyIdx].s;
+  currentIdx = dailyIdx;
 
-  var btn = document.getElementById('copyBtn');
-  var copyText = quote.t + ' ——' + quote.s;
-  var timer = null;
+  var copyBtn = document.getElementById('copyBtn');
+  var copyTimer = null;
 
-  btn.addEventListener('click', function () {
+  function getCopyText() {
+    return quoteEl.textContent + ' ——' + sourceEl.textContent;
+  }
+
+  copyBtn.addEventListener('click', function () {
+    var text = getCopyText();
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(copyText).then(showCopied);
+      navigator.clipboard.writeText(text).then(showCopied);
     } else {
       var ta = document.createElement('textarea');
-      ta.value = copyText;
+      ta.value = text;
       ta.style.position = 'fixed';
       ta.style.left = '-9999px';
       document.body.appendChild(ta);
@@ -274,14 +385,27 @@
   });
 
   function showCopied() {
-    btn.classList.add('copied');
-    btn.setAttribute('title', '已复制');
-    clearTimeout(timer);
-    timer = setTimeout(function () {
-      btn.classList.remove('copied');
-      btn.setAttribute('title', '复制');
+    copyBtn.classList.add('copied');
+    copyBtn.setAttribute('title', '已复制');
+    clearTimeout(copyTimer);
+    copyTimer = setTimeout(function () {
+      copyBtn.classList.remove('copied');
+      copyBtn.setAttribute('title', '复制');
     }, 1600);
   }
+
+  var refreshBtn = document.getElementById('refreshBtn');
+  refreshBtn.addEventListener('click', function () {
+    refreshBtn.classList.add('spinning');
+    setTimeout(function () { refreshBtn.classList.remove('spinning'); }, 350);
+
+    var newIdx;
+    do {
+      newIdx = Math.floor(Math.random() * QUOTES.length);
+    } while (newIdx === currentIdx && QUOTES.length > 1);
+
+    setQuote(newIdx);
+  });
 })();
 </script>
 
