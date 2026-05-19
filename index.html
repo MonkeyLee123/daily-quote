@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>每日一句</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { height: 100%; }
+
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: #f7f3ed;
+    color: #2c2c2c;
+    font-family: "Noto Serif SC", "Source Han Serif SC", "STSong", Georgia, "Times New Roman", serif;
+    line-height: 1.8;
+    padding: 2rem;
+  }
+
+  .card {
+    max-width: 640px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .date {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-size: 0.85rem;
+    color: #b0a89b;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 2.5rem;
+  }
+
+  .quote {
+    font-size: clamp(1.4rem, 3vw, 2.2rem);
+    line-height: 1.85;
+    letter-spacing: 0.02em;
+    margin-bottom: 1.5rem;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .source {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-size: 0.95rem;
+    color: #9a9184;
+  }
+
+  .source::before {
+    content: "—— ";
+  }
+
+  .copy-btn {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid #d5cfc5;
+    background: rgba(247, 243, 237, 0.9);
+    color: #b0a89b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.25;
+    transition: opacity 0.25s, color 0.25s, border-color 0.25s;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  .copy-btn:hover,
+  .copy-btn:focus-visible {
+    opacity: 1;
+    color: #6b6358;
+    border-color: #b0a89b;
+    outline: none;
+  }
+
+  .copy-btn:active {
+    transform: scale(0.95);
+  }
+
+  .copy-btn svg {
+    width: 18px;
+    height: 18px;
+    pointer-events: none;
+  }
+
+  .copy-btn.copied {
+    opacity: 1;
+    color: #5a8a6e;
+    border-color: #5a8a6e;
+  }
+
+  @media (max-width: 480px) {
+    body { padding: 1.5rem; }
+    .copy-btn { bottom: 1.25rem; right: 1.25rem; opacity: 0.35; }
+    .quote { font-size: clamp(1.15rem, 5vw, 1.5rem); }
+  }
+</style>
+</head>
+<body>
+
+<main class="card">
+  <div class="date" id="date"></div>
+  <blockquote class="quote" id="quote"></blockquote>
+  <cite class="source" id="source"></cite>
+</main>
+
+<button class="copy-btn" id="copyBtn" aria-label="复制名言" title="复制">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+  </svg>
+</button>
+
+<noscript>
+  <style>
+    .card { opacity: 1; }
+  </style>
+  <div class="card" style="text-align:center">
+    <p style="color:#b0a89b">请启用 JavaScript 以显示每日名言。</p>
+  </div>
+</noscript>
+
+<script>
+(function () {
+  var QUOTES = [
+    { t: "上善若水。水善利万物而不争，处众人之所恶，故几于道。", s: "《道德经》" },
+    { t: "千里之行，始于足下。", s: "《道德经》" },
+    { t: "知人者智，自知者明。胜人者有力，自胜者强。", s: "《道德经》" },
+    { t: "天下难事，必作于易；天下大事，必作于细。", s: "《道德经》" },
+    { t: "大直若屈，大巧若拙，大辩若讷。", s: "《道德经》" },
+    { t: "知足者富。", s: "《道德经》" },
+    { t: "为学日益，为道日损。损之又损，以至于无为。", s: "《道德经》" },
+    { t: "知不知，尚矣；不知知，病也。", s: "《道德经》" },
+    { t: "己所不欲，勿施于人。", s: "《论语》" },
+    { t: "学而不思则罔，思而不学则殆。", s: "《论语》" },
+    { t: "知之者不如好之者，好之者不如乐之者。", s: "《论语》" },
+    { t: "三人行，必有我师焉。择其善者而从之，其不善者而改之。", s: "《论语》" },
+    { t: "君子和而不同，小人同而不和。", s: "《论语》" },
+    { t: "吾生也有涯，而知也无涯。", s: "《庄子》" },
+    { t: "天地有大美而不言，四时有明法而不议，万物有成理而不说。", s: "《庄子》" },
+    { t: "相濡以沫，不如相忘于江湖。", s: "《庄子》" },
+    { t: "至人无己，神人无功，圣人无名。", s: "《庄子》" },
+    { t: "不以物喜，不以己悲。", s: "范仲淹《岳阳楼记》" },
+    { t: "此心安处是吾乡。", s: "苏轼" },
+    { t: "山重水复疑无路，柳暗花明又一村。", s: "陆游" },
+    { t: "不畏浮云遮望眼，自缘身在最高层。", s: "王安石" },
+    { t: "人生如逆旅，我亦是行人。", s: "苏轼" },
+    { t: "宠辱不惊，看庭前花开花落；去留无意，望天上云卷云舒。", s: "《菜根谭》" },
+    { t: "知行合一。", s: "王阳明" },
+    { t: "破山中贼易，破心中贼难。", s: "王阳明" },
+    { t: "看山是山，看水是水。看山不是山，看水不是水。看山还是山，看水还是水。", s: "青原行思禅师" },
+    { t: "应无所住而生其心。", s: "《金刚经》" },
+    { t: "本来无一物，何处惹尘埃。", s: "惠能" },
+    { t: "花非花，雾非雾。夜半来，天明去。来如春梦不多时，去似朝云无觅处。", s: "白居易" },
+    { t: "博学之，审问之，慎思之，明辨之，笃行之。", s: "《中庸》" },
+
+    { t: "认识你自己。", s: "古希腊德尔斐神庙铭文" },
+    { t: "未经审视的人生不值得过。", s: "苏格拉底" },
+    { t: "我思故我在。", s: "笛卡尔" },
+    { t: "人是生而自由的，却无往不在枷锁之中。", s: "卢梭" },
+    { t: "存在先于本质。", s: "萨特" },
+    { t: "那些杀不死我的，只会让我更强大。", s: "尼采" },
+    { t: "一个人知道自己为什么而活，就可以忍受任何一种生活。", s: "尼采" },
+    { t: "当你凝视深渊的时候，深渊也在凝视你。", s: "尼采" },
+    { t: "每一个不曾起舞的日子，都是对生命的辜负。", s: "尼采" },
+    { t: "你必须想象西西弗斯是幸福的。", s: "加缪" },
+    { t: "在隆冬，我终于知道，我身上有一个不可战胜的夏天。", s: "加缪" },
+    { t: "走得慢不要紧，只要不停下脚步。", s: "塞内卡" },
+    { t: "让我们痛苦的并非事物本身，而是我们对事物的看法。", s: "爱比克泰德" },
+    { t: "你有力量掌控自己的心灵——而非外部事件。意识到这一点，你便找到了力量。", s: "马可·奥勒留《沉思录》" },
+    { t: "你生活的幸福取决于你思想的质量。", s: "马可·奥勒留《沉思录》" },
+    { t: "我们更多时候在想象中受苦，而非在现实中。", s: "塞内卡" },
+    { t: "一个人不是生下来就是女人，而是变成女人的。", s: "西蒙·波伏娃" },
+    { t: "人是悬挂在自己编织的意义之网上的动物。", s: "马克斯·韦伯" },
+    { t: "行动不一定带来幸福，但没有行动就没有幸福。", s: "本杰明·迪斯雷利" },
+    { t: "意识到自己的局限性，正是超越局限的开始。", s: "斯宾诺莎" },
+
+    { t: "向外看的人在做梦，向内看的人已醒来。", s: "荣格" },
+    { t: "认识自己的阴暗面，是应对他人阴暗面最好的方法。", s: "荣格" },
+    { t: "人终其一生，不过是为了成为自己。", s: "荣格" },
+    { t: "所有令我们恼怒的他人，都能引领我们理解自己。", s: "荣格" },
+    { t: "你没有觉察到的事情，就会变成你的「命运」。", s: "荣格" },
+    { t: "决定我们自身的不是过去的经历，而是我们自己赋予经历的意义。", s: "阿德勒" },
+    { t: "人只有在感觉自己有价值的时候，才拥有勇气。", s: "阿德勒" },
+    { t: "生命中最大的危险，是你可能过于谨慎。", s: "阿德勒" },
+    { t: "在刺激与回应之间，有一段空间。在这段空间里，是我们选择回应的自由与力量。", s: "维克多·弗兰克尔" },
+    { t: "当我们无法改变处境时，我们就被要求改变自己。", s: "维克多·弗兰克尔" },
+    { t: "爱是回应人类存在问题的唯一健全且令人满意的答案。", s: "埃里希·弗洛姆《爱的艺术》" },
+    { t: "我们给自己的任务不是获得安全感，而是学会容忍不安全感。", s: "埃里希·弗洛姆" },
+    { t: "一个人可以成为什么，他就必须成为什么。", s: "亚伯拉罕·马斯洛" },
+    { t: "好的生活是一个过程，而不是一种存在状态。", s: "卡尔·罗杰斯" },
+    { t: "成为一个完整的人，比成为一个好的人更重要。", s: "卡尔·罗杰斯" },
+    { t: "如果你只使用锤子，你会把每个问题都看成钉子。", s: "亚伯拉罕·马斯洛" },
+    { t: "我们不是因为事情难而不敢做，而是因为不敢做事情才难。", s: "塞内卡" },
+    { t: "人是理性的，但更是合理化自己的行为的动物。", s: "埃利奥特·阿伦森" },
+    { t: "受苦的意义在于它让我们得以保全自己的人性。", s: "维克多·弗兰克尔" },
+    { t: "真正重要的不是我们拥有什么，而是我们是什么。", s: "叔本华" },
+    { t: "一个人只有在独处的时候，才能成为自己。不爱独处的人，就不爱自由。", s: "叔本华" },
+    { t: "适度是智慧的开端。", s: "亚里士多德" },
+    { t: "我们反复做的事情造就了我们。因此，卓越不是一种行为，而是一种习惯。", s: "亚里士多德" },
+    { t: "教育的根是苦的，但它的果实是甜的。", s: "亚里士多德" },
+    { t: "眼睛是灵魂的窗户。", s: "列夫·托尔斯泰" },
+    { t: "人人都想改变世界，却没有人想改变自己。", s: "列夫·托尔斯泰" },
+    { t: "幸福不取决于外在事物，而取决于我们看待事物的方式。", s: "列夫·托尔斯泰" },
+    { t: "生活不是我们活过的日子，而是我们记住的日子。", s: "马尔克斯" },
+    { t: "一个人有两个自我：一个在黑暗中醒着，一个在光明中睡着。", s: "纪伯伦" },
+    { t: "你的孩子不是你的孩子。他们是生命对自身的渴望所生的子女。", s: "纪伯伦《先知》" },
+    { t: "静下心来，一切都会水到渠成。", s: "老子（西方解读）" },
+    { t: "当我们停止思考自己时，我们才开始真正活着。", s: "列夫·托尔斯泰" },
+    { t: "过去只是一个我们不断重述的故事。", s: "希拉里·曼特尔" },
+    { t: "所谓自由，就是不再执着于被爱。", s: "岸见一郎 / 古贺史健《被讨厌的勇气》" }
+  ];
+
+  function hashDJB2(str) {
+    var h = 5381;
+    for (var i = 0; i < str.length; i++) {
+      h = ((h << 5) + h + str.charCodeAt(i)) | 0;
+    }
+    return h >>> 0;
+  }
+
+  function getTodayKey() {
+    var d = new Date();
+    var yyyy = d.getFullYear();
+    var mm = String(d.getMonth() + 1).padStart(2, '0');
+    var dd = String(d.getDate()).padStart(2, '0');
+    return yyyy + '-' + mm + '-' + dd;
+  }
+
+  function getDateDisplay() {
+    var d = new Date();
+    var weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+    return d.getFullYear() + '年'
+      + (d.getMonth() + 1) + '月'
+      + d.getDate() + '日'
+      + '　星期' + weekdays[d.getDay()];
+  }
+
+  var key = getTodayKey();
+  var idx = hashDJB2(key) % QUOTES.length;
+  var quote = QUOTES[idx];
+
+  document.getElementById('date').textContent = getDateDisplay();
+  document.getElementById('quote').textContent = quote.t;
+  document.getElementById('source').textContent = quote.s;
+
+  var btn = document.getElementById('copyBtn');
+  var copyText = quote.t + ' ——' + quote.s;
+  var timer = null;
+
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(copyText).then(showCopied);
+    } else {
+      var ta = document.createElement('textarea');
+      ta.value = copyText;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); showCopied(); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+  });
+
+  function showCopied() {
+    btn.classList.add('copied');
+    btn.setAttribute('title', '已复制');
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      btn.classList.remove('copied');
+      btn.setAttribute('title', '复制');
+    }, 1600);
+  }
+})();
+</script>
+
+</body>
+</html>
